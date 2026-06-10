@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+  min-height: 100vh;
+}
+
+.cg-input {
+  @apply w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold transition-all text-sm;
+}
+
+.cg-select {
+  @apply w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold transition-all bg-white text-sm;
+}
+
+.cg-label {
+  @apply block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider;
+}
+
+.cg-btn-primary {
+  @apply w-full py-3 bg-brand-dark text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400;
+}
+
+.cg-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-5;
+}
+
+.cg-radio-group {
+  @apply flex flex-wrap gap-2;
+}
+
+.cg-radio-option input[type="radio"] { @apply sr-only; }
+.cg-radio-option label {
+  @apply block px-3 py-2 text-xs text-center border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-brand-gold;
+}
+.cg-radio-option input[type="radio"]:checked + label {
+  @apply border-brand-gold bg-brand-gold/10 text-brand-dark font-medium;
+}
