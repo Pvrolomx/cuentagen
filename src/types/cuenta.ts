@@ -12,7 +12,7 @@ export interface CuentaData {
   empresa: Empresa;
   fecha: string;
   cliente: string;
-  referencia: string; // e.g., "Unit 5204 – La Joya de Mismaloya – Closing"
+  referencia: string;
   servicios: LineItem[];
   gastos: LineItem[];
   cuentaBancaria: CuentaBancaria;
@@ -60,7 +60,12 @@ export const CUENTAS_BANCARIAS: Record<CuentaBancaria, {
   cuenta: string;
   rfc: string;
   moneda: 'USD' | 'MXN';
-  intermediarios?: string[];
+  intermediario?: {
+    banco: string;
+    swift: string;
+    aba: string;
+    ciudad: string;
+  };
 }> = {
   rolo_banamex: {
     label: 'Rolo - Banamex',
@@ -109,11 +114,12 @@ export const CUENTAS_BANCARIAS: Record<CuentaBancaria, {
     cuenta: '1333388694',
     rfc: 'CBP250521I20',
     moneda: 'USD',
-    intermediarios: [
-      'JP MORGAN CHASE BANK, NA - SWIFT: CHASUS33XXX (ABA 021-000-021) NEW YORK, NY',
-      'BANK OF AMERICA, NA - SWIFT: BOFAUS6SXXX (ABA 021-000-358) SAN FRANCISCO, CA',
-      'WELLS FARGO BANK - SWIFT: PNBPUS33XXX (ABA 026-005-092) NEW YORK, NY',
-    ],
+    intermediario: {
+      banco: 'JP MORGAN CHASE BANK, NA',
+      swift: 'CHASUS33XXX',
+      aba: '021-000-021',
+      ciudad: 'NEW YORK, NY, USA',
+    },
   },
 };
 
@@ -146,7 +152,6 @@ export const DEFAULT_CUENTA: CuentaData = {
   moneda: 'USD',
 };
 
-// Funciones para cargar assets
 export async function loadAsset(name: string): Promise<string> {
   try {
     const response = await fetch(`/${name}.b64`);

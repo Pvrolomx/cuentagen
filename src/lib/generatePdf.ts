@@ -8,7 +8,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   const cuenta = CUENTAS_BANCARIAS[data.cuentaBancaria];
   const firmante = FIRMANTES[data.firmante];
   
-  // Cargar assets
   const logoBase64 = await loadAsset(empresa.logo);
   const firmaBase64 = await loadAsset(firmante.firma);
   
@@ -76,7 +75,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   
-  // Services - mostrar si hay monto > 0
   for (const item of data.servicios) {
     if (item.amount <= 0) continue;
     
@@ -93,7 +91,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     total += item.amount;
   }
   
-  // Additional expenses
   const validGastos = data.gastos.filter(g => g.amount > 0);
   if (validGastos.length > 0) {
     y += 5;
@@ -148,6 +145,31 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   doc.setFontSize(9);
   doc.setTextColor(51, 51, 51);
   
+  // Intermediary Bank (si existe)
+  if (cuenta.intermediario) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 120, 50);
+    doc.text('INTERMEDIARY BANK', labelX, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
+    doc.text(`Bank: ${cuenta.intermediario.banco}`, labelX + 5, y);
+    y += 4;
+    doc.text(`SWIFT: ${cuenta.intermediario.swift}  |  ABA: ${cuenta.intermediario.aba}`, labelX + 5, y);
+    y += 4;
+    doc.text(cuenta.intermediario.ciudad, labelX + 5, y);
+    y += 8;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 120, 50);
+    doc.text('BENEFICIARY BANK', labelX, y);
+    y += 5;
+    doc.setTextColor(51, 51, 51);
+  }
+  
   const wireFields = [
     ['Beneficiary', cuenta.beneficiario],
     ['Address', cuenta.direccion],
@@ -161,6 +183,7 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   
   for (const [label, value] of wireFields) {
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
     doc.text(label as string, labelX, y);
     doc.setFont('helvetica', 'normal');
     
@@ -168,20 +191,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], valueX, y);
       y += 5;
-    }
-  }
-  
-  if (cuenta.intermediarios && cuenta.intermediarios.length > 0) {
-    y += 3;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('Intermediary Bank (pick any):', labelX, y);
-    y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    for (const bank of cuenta.intermediarios) {
-      doc.text('• ' + bank, labelX + 2, y);
-      y += 4;
     }
   }
   
@@ -212,7 +221,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     y += 20;
   }
   
-  // Nombre del firmante (centrado)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(26, 26, 26);
