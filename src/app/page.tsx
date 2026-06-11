@@ -9,6 +9,8 @@ export default function Home() {
   const [data, setData] = useState<CuentaData>(DEFAULT_CUENTA);
   const [loading, setLoading] = useState(false);
 
+  const conceptos = EMPRESAS[data.empresa].conceptos;
+
   const updateData = (partial: Partial<CuentaData>) => {
     setData((prev) => ({ ...prev, ...partial }));
   };
@@ -30,11 +32,19 @@ export default function Home() {
 
   // Line items handlers
   const addServicio = () => {
-    updateData({ servicios: [...data.servicios, { id: generateId(), description: '', amount: 0 }] });
+    updateData({ servicios: [...data.servicios, { id: generateId(), concepto: '', description: '', amount: 0 }] });
   };
   const updateServicio = (id: string, field: keyof LineItem, value: string | number) => {
     updateData({
-      servicios: data.servicios.map(s => s.id === id ? { ...s, [field]: value } : s)
+      servicios: data.servicios.map(s => {
+        if (s.id !== id) return s;
+        const updated = { ...s, [field]: value };
+        // Si selecciona un concepto predefinido (no "otro"), auto-llenar descripción
+        if (field === 'concepto' && value !== 'otro' && value !== '') {
+          updated.description = conceptos[value as string] || '';
+        }
+        return updated;
+      })
     });
   };
   const removeServicio = (id: string) => {
@@ -44,7 +54,7 @@ export default function Home() {
   };
 
   const addGasto = () => {
-    updateData({ gastos: [...data.gastos, { id: generateId(), description: '', amount: 0 }] });
+    updateData({ gastos: [...data.gastos, { id: generateId(), concepto: '', description: '', amount: 0 }] });
   };
   const updateGasto = (id: string, field: keyof LineItem, value: string | number) => {
     updateData({
@@ -151,18 +161,44 @@ export default function Home() {
               </select>
             </div>
             
-            {data.servicios.map((item, idx) => (
-              <div key={item.id} className="flex gap-2 mb-2">
-                <input type="text" className="cg-input flex-1" placeholder="Descripción del servicio"
-                  value={item.description}
-                  onChange={(e) => updateServicio(item.id, 'description', e.target.value)}
-                />
-                <input type="number" className="cg-input w-28" placeholder="Monto" min="0" step="0.01"
-                  value={item.amount || ''}
-                  onChange={(e) => updateServicio(item.id, 'amount', parseFloat(e.target.value) || 0)}
-                />
-                {data.servicios.length > 1 && (
-                  <button onClick={() => removeServicio(item.id)} className="text-red-400 hover:text-red-600 px-2">✕</button>
+            {data.servicios.map((item) => (
+              <div key={item.id} className="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div className="flex gap-2 mb-2">
+                  <select 
+                    className="cg-select flex-1"
+                    value={item.concepto}
+                    onChange={(e) => updateServicio(item.id, 'concepto', e.target.value)}
+                  >
+                    <option value="">-- Seleccionar concepto --</option>
+                    {Object.entries(conceptos).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                  <input 
+                    type="number" 
+                    className="cg-input w-28" 
+                    placeholder="Monto" 
+                    min="0" 
+                    step="0.01"
+                    value={item.amount || ''}
+                    onChange={(e) => updateServicio(item.id, 'amount', parseFloat(e.target.value) || 0)}
+                  />
+                  {data.servicios.length > 1 && (
+                    <button onClick={() => removeServicio(item.id)} className="text-red-400 hover:text-red-600 px-2">✕</button>
+                  )}
+                </div>
+                {/* Mostrar campo de descripción si es "otro" o si ya hay descripción */}
+                {(item.concepto === 'otro' || item.concepto === '') && (
+                  <input 
+                    type="text" 
+                    className="cg-input w-full text-sm" 
+                    placeholder="Descripción del servicio"
+                    value={item.description}
+                    onChange={(e) => updateServicio(item.id, 'description', e.target.value)}
+                  />
+                )}
+                {item.concepto && item.concepto !== 'otro' && (
+                  <p className="text-xs text-gray-500 mt-1">{item.description}</p>
                 )}
               </div>
             ))}

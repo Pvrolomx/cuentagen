@@ -4,6 +4,7 @@ export type Firmante = 'rolo' | 'claudia';
 
 export interface LineItem {
   id: string;
+  concepto: string;
   description: string;
   amount: number;
 }
@@ -20,6 +21,32 @@ export interface CuentaData {
   moneda: 'USD' | 'MXN';
 }
 
+// Conceptos por empresa
+export const CONCEPTOS_EAMX: Record<string, string> = {
+  legal_consulting: 'Legal Consulting',
+  real_estate_advisory: 'Real Estate Advisory Services',
+  immigration_services: 'Immigration Services',
+  fideicomiso_services: 'Fideicomiso Services',
+  legal_representation: 'Legal Representation',
+  tax_advisory: 'Tax Advisory',
+  document_preparation: 'Document Preparation & Review',
+  power_of_attorney: 'Power of Attorney Preparation',
+  closing_coordination: 'Closing Coordination',
+  otro: 'Other (custom)',
+};
+
+export const CONCEPTOS_CASTLE: Record<string, string> = {
+  property_management: 'Property Management Services',
+  administrative_services: 'Administrative Services',
+  repairs_supervision: 'Repairs & Maintenance Supervision',
+  renovations_supervision: 'Renovations Supervision',
+  guest_services: 'Guest Services',
+  cleaning_coordination: 'Cleaning Coordination',
+  maintenance_coordination: 'Maintenance Coordination',
+  owner_distributions: 'Owner Distributions',
+  otro: 'Other (custom)',
+};
+
 export const EMPRESAS: Record<Empresa, { 
   nombre: string; 
   subtitulo: string;
@@ -28,6 +55,7 @@ export const EMPRESAS: Record<Empresa, {
   telefono: string;
   email: string;
   web: string;
+  conceptos: Record<string, string>;
 }> = {
   eamx: {
     nombre: 'EXPAT ADVISOR MX',
@@ -37,6 +65,7 @@ export const EMPRESAS: Record<Empresa, {
     telefono: '+52 322 111 0294',
     email: 'rolo@expatadvisormx.com',
     web: 'expatadvisormx.com',
+    conceptos: CONCEPTOS_EAMX,
   },
   castle: {
     nombre: 'CASTLE SOLUTIONS',
@@ -46,6 +75,7 @@ export const EMPRESAS: Record<Empresa, {
     telefono: '+52 322 306 8482',
     email: 'contabilidad@castlesolutions.biz',
     web: 'castlesolutions.mx',
+    conceptos: CONCEPTOS_CASTLE,
   },
 };
 
@@ -188,7 +218,7 @@ export const DEFAULT_CUENTA: CuentaData = {
   fecha: new Date().toISOString().slice(0, 10),
   cliente: '',
   referencia: '',
-  servicios: [{ id: '1', description: '', amount: 0 }],
+  servicios: [{ id: '1', concepto: '', description: '', amount: 0 }],
   gastos: [],
   cuentaBancaria: 'rolo_banamex',
   firmante: 'rolo',
