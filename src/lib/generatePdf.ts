@@ -22,7 +22,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   let y = margin;
   
   // === HEADER ===
-  // Logo
   if (logoBase64) {
     try {
       const logoWidth = data.empresa === 'eamx' ? 35 : 40;
@@ -34,7 +33,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     } catch (e) { console.error('Logo error:', e); }
   }
   
-  // Company name
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(26, 26, 26);
@@ -45,14 +43,12 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   doc.setTextColor(102, 102, 102);
   doc.text(empresa.subtitulo, pageWidth / 2, y + 14, { align: 'center' });
   
-  // Date & Location
   y += 28;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(51, 51, 51);
   doc.text(`${empresa.direccion}, ${formatDate(data.fecha)}`, margin, y);
   
-  // Reference
   if (data.referencia) {
     y += 8;
     doc.setFont('helvetica', 'bold');
@@ -64,7 +60,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   // === SERVICES TABLE ===
   y += 15;
   
-  // Header row
   doc.setFillColor(245, 245, 245);
   doc.rect(margin, y - 4, contentWidth, 8, 'F');
   doc.setFont('helvetica', 'bold');
@@ -77,16 +72,16 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   doc.setDrawColor(229, 229, 229);
   doc.line(margin, y - 4, pageWidth - margin, y - 4);
   
-  // Services
   let total = 0;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   
+  // Services - mostrar si hay monto > 0
   for (const item of data.servicios) {
-    if (!item.description || item.amount <= 0) continue;
+    if (item.amount <= 0) continue;
     
-    // Split long descriptions
-    const lines = doc.splitTextToSize(item.description, contentWidth - 50);
+    const desc = item.description || 'Professional Services';
+    const lines = doc.splitTextToSize(desc, contentWidth - 50);
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], margin + 2, y);
       if (i === 0) {
@@ -99,7 +94,8 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   }
   
   // Additional expenses
-  if (data.gastos.length > 0 && data.gastos.some(g => g.description && g.amount > 0)) {
+  const validGastos = data.gastos.filter(g => g.amount > 0);
+  if (validGastos.length > 0) {
     y += 5;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -109,9 +105,9 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     y += 10;
     
     doc.setFont('helvetica', 'normal');
-    for (const item of data.gastos) {
-      if (!item.description || item.amount <= 0) continue;
-      const lines = doc.splitTextToSize(item.description, contentWidth - 50);
+    for (const item of validGastos) {
+      const desc = item.description || 'Additional expense';
+      const lines = doc.splitTextToSize(desc, contentWidth - 50);
       for (let i = 0; i < lines.length; i++) {
         doc.text(lines[i], margin + 2, y);
         if (i === 0) {
@@ -175,7 +171,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     }
   }
   
-  // Intermediary banks (for USD accounts)
   if (cuenta.intermediarios && cuenta.intermediarios.length > 0) {
     y += 3;
     doc.setFont('helvetica', 'bold');
@@ -190,42 +185,44 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     }
   }
   
-  // === SIGNATURE ===
+  // === SIGNATURE (CENTRADA) ===
   y += 15;
+  const signatureWidth = 50;
+  const signatureCenterX = pageWidth / 2 - (signatureWidth / 2);
   
-  // Firma imagen
   if (firmaBase64) {
     try {
       doc.addImage(
         `data:image/jpeg;base64,${firmaBase64}`,
         'JPEG',
-        margin,
+        signatureCenterX,
         y,
-        45,
-        22
+        signatureWidth,
+        25
       );
-      y += 25;
+      y += 28;
     } catch {
-      doc.line(margin, y + 15, margin + 50, y + 15);
+      doc.setDrawColor(200, 200, 200);
+      doc.line(signatureCenterX, y + 15, signatureCenterX + signatureWidth, y + 15);
       y += 20;
     }
   } else {
     doc.setDrawColor(200, 200, 200);
-    doc.line(margin, y + 15, margin + 50, y + 15);
+    doc.line(signatureCenterX, y + 15, signatureCenterX + signatureWidth, y + 15);
     y += 20;
   }
   
-  // Nombre del firmante
+  // Nombre del firmante (centrado)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(26, 26, 26);
-  doc.text(firmante.nombre, margin, y);
+  doc.text(firmante.nombre, pageWidth / 2, y, { align: 'center' });
   
   if (firmante.titulo) {
     y += 5;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.text(firmante.titulo, margin, y);
+    doc.text(firmante.titulo, pageWidth / 2, y, { align: 'center' });
   }
   
   // === FOOTER ===
