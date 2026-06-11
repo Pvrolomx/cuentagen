@@ -25,10 +25,7 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
     try {
       const logoWidth = data.empresa === 'eamx' ? 35 : 40;
       const logoHeight = data.empresa === 'eamx' ? 19 : 12;
-      doc.addImage(
-        `data:image/png;base64,${logoBase64}`,
-        'PNG', margin, y, logoWidth, logoHeight
-      );
+      doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, y, logoWidth, logoHeight);
     } catch (e) { console.error('Logo error:', e); }
   }
   
@@ -77,7 +74,6 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   
   for (const item of data.servicios) {
     if (item.amount <= 0) continue;
-    
     const desc = item.description || 'Professional Services';
     const lines = doc.splitTextToSize(desc, contentWidth - 50);
     for (let i = 0; i < lines.length; i++) {
@@ -135,80 +131,85 @@ export async function generateCuentaPdf(data: CuentaData): Promise<Blob> {
   doc.setTextColor(201, 168, 76);
   doc.text('WIRE TRANSFER INSTRUCTIONS', margin, y);
   
-  y += 8;
+  y += 5;
   doc.setDrawColor(201, 168, 76);
   doc.setLineWidth(0.3);
-  doc.line(margin, y - 3, pageWidth - margin, y - 3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 8;
   
-  const labelX = margin + 2;
-  const valueX = margin + 45;
-  doc.setFontSize(9);
-  doc.setTextColor(51, 51, 51);
+  const indent = margin + 3;
   
-  // Intermediary Bank (si existe)
+  // BLOQUE 1: INTERMEDIARY BANK (si existe)
   if (cuenta.intermediario) {
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(150, 120, 50);
-    doc.text('INTERMEDIARY BANK', labelX, y);
-    y += 5;
-    doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(51, 51, 51);
-    doc.text(`Bank: ${cuenta.intermediario.banco}`, labelX + 5, y);
-    y += 4;
-    doc.text(`SWIFT: ${cuenta.intermediario.swift}  |  ABA: ${cuenta.intermediario.aba}`, labelX + 5, y);
-    y += 4;
-    doc.text(cuenta.intermediario.ciudad, labelX + 5, y);
-    y += 8;
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(150, 120, 50);
-    doc.text('BENEFICIARY BANK', labelX, y);
+    doc.text('INTERMEDIARY BANK', margin, y);
     y += 5;
-    doc.setTextColor(51, 51, 51);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Bank: ${cuenta.intermediario.banco}`, indent, y);
+    y += 5;
+    doc.text(`SWIFT: ${cuenta.intermediario.swift}`, indent, y);
+    y += 5;
+    doc.text(`(ABA   ${cuenta.intermediario.aba})`, indent, y);
+    y += 5;
+    doc.text(cuenta.intermediario.ciudad, indent, y);
+    y += 10;
   }
   
-  const wireFields = [
-    ['Beneficiary', cuenta.beneficiario],
-    ['Address', cuenta.direccion],
-    ['Bank', cuenta.banco],
-    ['Bank Address', cuenta.direccionBanco],
-    ['SWIFT', cuenta.swift],
-    ['CLABE', cuenta.clabe],
-    ['Account Number', cuenta.cuenta],
-    ['RFC', cuenta.rfc],
-  ].filter(([_, v]) => v);
+  // BLOQUE 2: BENEFICIARY BANK
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(51, 51, 51);
+  doc.text('BENEFICIARY BANK', margin, y);
+  y += 5;
   
-  for (const [label, value] of wireFields) {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text(label as string, labelX, y);
-    doc.setFont('helvetica', 'normal');
-    
-    const lines = doc.splitTextToSize(value as string, contentWidth - 50);
-    for (let i = 0; i < lines.length; i++) {
-      doc.text(lines[i], valueX, y);
-      y += 5;
-    }
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Bank: ${cuenta.bancoBeneficiario.banco}`, indent, y);
+  y += 5;
+  doc.text(`SWIFT: ${cuenta.bancoBeneficiario.swift}`, indent, y);
+  y += 5;
+  doc.text(cuenta.bancoBeneficiario.direccion, indent, y);
+  y += 5;
+  doc.text(`Account: ${cuenta.bancoBeneficiario.cuenta}`, indent, y);
+  y += 5;
+  doc.text(`CLABE: ${cuenta.bancoBeneficiario.clabe}`, indent, y);
+  y += 10;
+  
+  // BLOQUE 3: BENEFICIARY
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('BENEFICIARY', margin, y);
+  y += 5;
+  
+  doc.setFont('helvetica', 'normal');
+  doc.text(cuenta.beneficiario.nombre, indent, y);
+  y += 5;
+  if (cuenta.beneficiario.direccion) {
+    doc.text(`Address: ${cuenta.beneficiario.direccion}`, indent, y);
+    y += 5;
+  }
+  doc.text(`RFC: ${cuenta.beneficiario.rfc}`, indent, y);
+  y += 5;
+  if (cuenta.beneficiario.email) {
+    doc.text(`Email: ${cuenta.beneficiario.email}`, indent, y);
+    y += 5;
+  }
+  if (cuenta.beneficiario.celular) {
+    doc.text(`Cell: ${cuenta.beneficiario.celular}`, indent, y);
+    y += 5;
   }
   
   // === SIGNATURE (CENTRADA) ===
-  y += 15;
+  y += 10;
   const signatureWidth = 50;
   const signatureCenterX = pageWidth / 2 - (signatureWidth / 2);
   
   if (firmaBase64) {
     try {
-      doc.addImage(
-        `data:image/jpeg;base64,${firmaBase64}`,
-        'JPEG',
-        signatureCenterX,
-        y,
-        signatureWidth,
-        25
-      );
+      doc.addImage(`data:image/jpeg;base64,${firmaBase64}`, 'JPEG', signatureCenterX, y, signatureWidth, 25);
       y += 28;
     } catch {
       doc.setDrawColor(200, 200, 200);

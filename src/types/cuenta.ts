@@ -43,82 +43,125 @@ export const EMPRESAS: Record<Empresa, {
     subtitulo: 'Vacation Rental Management',
     logo: 'logo-castle',
     direccion: 'Paseo del Arque 59, Las Ceibas, Bahia de Banderas, Nay.',
-    telefono: '+52 322 111 0294',
+    telefono: '+52 322 306 8482',
     email: 'contabilidad@castlesolutions.biz',
     web: 'castlesolutions.mx',
   },
 };
 
+export interface BankInfo {
+  banco: string;
+  swift: string;
+  aba?: string;
+  direccion: string;
+  cuenta: string;
+  clabe: string;
+}
+
+export interface BeneficiaryInfo {
+  nombre: string;
+  direccion: string;
+  rfc: string;
+  email: string;
+  celular: string;
+}
+
+export interface IntermediaryBank {
+  banco: string;
+  swift: string;
+  aba: string;
+  ciudad: string;
+}
+
 export const CUENTAS_BANCARIAS: Record<CuentaBancaria, {
   label: string;
-  beneficiario: string;
-  direccion: string;
-  banco: string;
-  direccionBanco: string;
-  swift: string;
-  clabe: string;
-  cuenta: string;
-  rfc: string;
   moneda: 'USD' | 'MXN';
-  intermediario?: {
-    banco: string;
-    swift: string;
-    aba: string;
-    ciudad: string;
-  };
+  intermediario?: IntermediaryBank;
+  bancoBeneficiario: BankInfo;
+  beneficiario: BeneficiaryInfo;
 }> = {
   rolo_banamex: {
     label: 'Rolo - Banamex',
-    beneficiario: 'Rolando Romero García',
-    direccion: 'Brasil 1434, 5 de Diciembre, Puerto Vallarta, Jalisco, 48350',
-    banco: 'Banamex',
-    direccionBanco: 'Paseo de los Cocoteros 85, Local C-1 Paradise Plaza, Nuevo Vallarta, Nayarit, 63732',
-    swift: 'BNMXMXMM',
-    clabe: '002375701679195789',
-    cuenta: '7016000007919578',
-    rfc: 'ROGR660427SK8',
     moneda: 'USD',
+    bancoBeneficiario: {
+      banco: 'Banamex',
+      swift: 'BNMXMXMM',
+      direccion: 'Paseo de los Cocoteros 85, Local C-1 Paradise Plaza, Nuevo Vallarta, Nayarit, 63732',
+      cuenta: '7016000007919578',
+      clabe: '002375701679195789',
+    },
+    beneficiario: {
+      nombre: 'Rolando Romero García',
+      direccion: 'Brasil 1434, 5 de Diciembre, Puerto Vallarta, Jalisco, 48350',
+      rfc: 'ROGR660427SK8',
+      email: 'rolo@expatadvisormx.com',
+      celular: '+52 322 111 0294',
+    },
   },
   claudia_banamex: {
     label: 'Claudia - Banamex',
-    beneficiario: 'Claudia Rebeca Castillo Soto',
-    direccion: '',
-    banco: 'Banamex',
-    direccionBanco: 'Paseo de los Cocoteros 85, Local C-1 Paradise Plaza, Nuevo Vallarta, Nayarit, 63732',
-    swift: 'BNMXMXMM',
-    clabe: '002375700502489903',
-    cuenta: '7005248990',
-    rfc: 'CASC781111F20',
     moneda: 'MXN',
+    bancoBeneficiario: {
+      banco: 'Banamex',
+      swift: 'BNMXMXMM',
+      direccion: 'Paseo de los Cocoteros 85, Local C-1 Paradise Plaza, Nuevo Vallarta, Nayarit, 63732',
+      cuenta: '7005248990',
+      clabe: '002375700502489903',
+    },
+    beneficiario: {
+      nombre: 'Claudia Rebeca Castillo Soto',
+      direccion: '',
+      rfc: 'CASC781111F20',
+      email: '',
+      celular: '',
+    },
   },
   castle_mxn: {
     label: 'Castle Bay PV - Banorte MXN',
-    beneficiario: 'CASTLE BAY PV, SRL DE CV',
-    direccion: 'Paseo del Arque 59, Las Ceibas, Bahia de Banderas, Nay. CP. 63735',
-    banco: 'Banco Mercantil del Norte SA (Banorte)',
-    direccionBanco: 'Monterrey, NL. MEXICO',
-    swift: 'MENOMXMTXXX',
-    clabe: '072560013333839704',
-    cuenta: '1333383970',
-    rfc: 'CBP250521I20',
     moneda: 'MXN',
+    intermediario: {
+      banco: 'JP MORGAN CHASE BANK, NA',
+      swift: 'CHASUS33XXX',
+      aba: '021-000-021',
+      ciudad: 'NEW YORK, NY. USA',
+    },
+    bancoBeneficiario: {
+      banco: 'Banco Mercantil del Norte SA',
+      swift: 'MENOMXMTXXX',
+      direccion: 'Monterrey, NL. MEXICO',
+      cuenta: '1333383970',
+      clabe: '072560013333839704',
+    },
+    beneficiario: {
+      nombre: 'CASTLE BAY PV, SRL DE CV',
+      direccion: 'Paseo del Arque 59, Las Ceibas, Bahia de Banderas, Nay. CP. 63735',
+      rfc: 'CBP250521I20',
+      email: 'contabilidad@castlesolutions.biz',
+      celular: '+52 322 306 8482',
+    },
   },
   castle_usd: {
     label: 'Castle Bay PV - Banorte USD',
-    beneficiario: 'CASTLE BAY PV, SRL DE CV',
-    direccion: 'Paseo del Arque 59, Las Ceibas, Bahia de Banderas, Nay. CP. 63735',
-    banco: 'Banco Mercantil del Norte SA (Banorte)',
-    direccionBanco: 'Monterrey, NL. MEXICO',
-    swift: 'MENOMXMTXXX',
-    clabe: '072560013333886948',
-    cuenta: '1333388694',
-    rfc: 'CBP250521I20',
     moneda: 'USD',
     intermediario: {
       banco: 'JP MORGAN CHASE BANK, NA',
       swift: 'CHASUS33XXX',
       aba: '021-000-021',
-      ciudad: 'NEW YORK, NY, USA',
+      ciudad: 'NEW YORK, NY. USA',
+    },
+    bancoBeneficiario: {
+      banco: 'Banco Mercantil del Norte SA',
+      swift: 'MENOMXMTXXX',
+      direccion: 'Monterrey, NL. MEXICO',
+      cuenta: '1333388694',
+      clabe: '072560013333886948',
+    },
+    beneficiario: {
+      nombre: 'CASTLE BAY PV, SRL DE CV',
+      direccion: 'Paseo del Arque 59, Las Ceibas, Bahia de Banderas, Nay. CP. 63735',
+      rfc: 'CBP250521I20',
+      email: 'contabilidad@castlesolutions.biz',
+      celular: '+52 322 306 8482',
     },
   },
 };
